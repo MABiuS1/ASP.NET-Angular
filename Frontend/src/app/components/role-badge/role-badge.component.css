@@ -1,0 +1,24 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  height: 28px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-primary {
+  background: #1186f6;
+  color: #ffffff;
+  box-shadow: 0 10px 16px rgba(17, 134, 246, 0.2);
+}
+
+.badge-neutral {
+  background: #eef2f8;
+  color: #8d97a8;
+  box-shadow: none;
+}

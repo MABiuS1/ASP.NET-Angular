@@ -1,0 +1,57 @@
+:root {
+  --page-bg: #f5f7fb;
+  --sidebar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --accent: #4a7cf4;
+  --accent-dark: #3a67e4;
+  --accent-soft: #e8f0ff;
+  --text-strong: #1f2a44;
+  --text-muted: #8b95a7;
+  --border: #e9edf4;
+  --shadow: 0 20px 40px rgba(31, 42, 68, 0.08);
+  --shadow-soft: 0 10px 24px rgba(31, 42, 68, 0.06);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --font-body: "Poppins", "Manrope", sans-serif;
+  --font-display: "Poppins", "Manrope", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--text-strong);
+  background:
+    radial-gradient(circle at 85% -10%, rgba(74, 124, 244, 0.12), transparent 45%),
+    radial-gradient(circle at 10% 0%, rgba(255, 214, 150, 0.14), transparent 38%),
+    var(--page-bg);
+  background-attachment: fixed;
+  line-height: 1.5;
+}
+
+img,
+svg {
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}

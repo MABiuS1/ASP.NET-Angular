@@ -1,0 +1,749 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">YOURLOGO</div>
+
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" [class.active]="activeNav === 'Dashboard'" href="#" (click)="setActiveNav('Dashboard', $event)">
+        <span class="nav-icon icon-dashboard" aria-hidden="true"></span>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-link" [class.active]="activeNav === 'Users'" href="#" (click)="setActiveNav('Users', $event)">
+        <span class="nav-icon icon-users" aria-hidden="true"></span>
+        <span>Users</span>
+      </a>
+      <a class="nav-link" [class.active]="activeNav === 'Documents'" href="#" (click)="setActiveNav('Documents', $event)">
+        <span class="nav-icon icon-documents" aria-hidden="true"></span>
+        <span>Documents</span>
+      </a>
+      <a class="nav-link" [class.active]="activeNav === 'Photos'" href="#" (click)="setActiveNav('Photos', $event)">
+        <span class="nav-icon icon-photos" aria-hidden="true"></span>
+        <span>Photos</span>
+      </a>
+      <a class="nav-link" [class.active]="activeNav === 'Hierarchy'" href="#" (click)="setActiveNav('Hierarchy', $event)">
+        <span class="nav-icon icon-hierarchy" aria-hidden="true"></span>
+        <span>Hierarchy</span>
+      </a>
+     
+    </nav>
+
+    <nav aria-label="Secondary navigation">
+      <a class="nav-link" [class.active]="activeNav === 'Message'" href="#" (click)="setActiveNav('Message', $event)">
+        <span class="nav-icon icon-message" aria-hidden="true"></span>
+        <span>Message</span>
+      </a>
+      <a class="nav-link" [class.active]="activeNav === 'Help'" href="#" (click)="setActiveNav('Help', $event)">
+        <span class="nav-icon icon-help" aria-hidden="true"></span>
+        <span>Help</span>
+      </a>
+      <a class="nav-link" [class.active]="activeNav === 'Setting'" href="#" (click)="setActiveNav('Setting', $event)">
+        <span class="nav-icon icon-setting" aria-hidden="true"></span>
+        <span>Setting</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="hello">
+        <div class="hello-title">Hello, Lekan</div>
+        <div class="hello-sub">Have a nice day</div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="menu" (click)="$event.stopPropagation()">
+          <button class="icon-button notification" [class.has-notifications]="notifications.length > 0" type="button" aria-label="Notifications" [attr.aria-expanded]="openMenu === 'notifications'" (click)="toggleMenu('notifications', $event)">
+            <svg class="bell-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 0 0-5-5.91V4a1 1 0 1 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"></path>
+            </svg>
+          </button>
+          <div class="menu-panel notification-panel" *ngIf="openMenu === 'notifications'" (click)="$event.stopPropagation()">
+            <div class="menu-title">Notifications</div>
+            <div class="notification-item" *ngFor="let note of notifications">
+              <div class="notification-title">{{ note.title }}</div>
+              <div class="notification-detail">{{ note.detail }}</div>
+              <div class="notification-time">{{ note.time }}</div>
+            </div>
+            <div class="empty-note" *ngIf="notifications.length === 0">No new notifications</div>
+          </div>
+        </div>
+        <div class="topbar-divider" aria-hidden="true"></div>
+        <div class="menu" (click)="$event.stopPropagation()">
+          <button class="profile" type="button" aria-label="Open profile menu" [attr.aria-expanded]="openMenu === 'profile'" (click)="toggleMenu('profile', $event)">
+            <span class="avatar" aria-hidden="true"></span>
+            <span class="profile-info">
+              <span class="profile-name">Lekan Okeowo</span>
+              <span class="profile-role">Admin</span>
+            </span>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </button>
+          <div class="menu-panel profile-panel" *ngIf="openMenu === 'profile'" (click)="$event.stopPropagation()">
+            <button class="menu-item" type="button">My profile</button>
+            <button class="menu-item" type="button">Account settings</button>
+            <button class="menu-item" type="button">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="page">
+      <div class="page-section" *ngIf="activeNav === 'Dashboard'">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of what is happening today.</p>
+
+        <div class="dashboard-grid">
+          <div class="stat-card" *ngFor="let stat of dashboardStats">
+            <div class="stat-label">{{ stat.label }}</div>
+            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-change" [class.negative]="stat.trend === 'down'">{{ stat.change }}</div>
+          </div>
+        </div>
+
+        <div class="dashboard-panels">
+          <div class="panel">
+            <h3>Team Activity</h3>
+            <div class="activity-item" *ngFor="let activity of teamActivity">
+              <div>
+                <div class="activity-title">{{ activity.title }}</div>
+                <div class="activity-detail">{{ activity.detail }}</div>
+              </div>
+              <span class="activity-time">{{ activity.time }}</span>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Upcoming Events</h3>
+            <div class="event-item" *ngFor="let event of upcomingEvents">
+              <div>
+                <div class="event-title">{{ event.title }}</div>
+                <div class="event-owner">Hosted by {{ event.owner }}</div>
+              </div>
+              <span class="event-date">{{ event.date }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Users'">
+        <h1 class="page-title">Users Dashboard</h1>
+
+        <div class="toolbar">
+          <label class="search">
+            <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-3.5-3.5"></path>
+              </svg>
+            </span>
+            <input type="search" placeholder="Search" autocomplete="off" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
+          </label>
+
+          <div class="toolbar-actions">
+            <button class="btn primary" type="button" (click)="openAddUser()" [disabled]="rolesLoading || permissionsLoading">
+              Add user +
+            </button>
+
+            <div class="menu" (click)="$event.stopPropagation()">
+              <button class="btn ghost" type="button" [attr.aria-expanded]="openMenu === 'sort'" (click)="toggleMenu('sort', $event)">
+                Sort by
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </button>
+              <div class="menu-panel" *ngIf="openMenu === 'sort'" (click)="$event.stopPropagation()">
+                <button class="menu-item" *ngFor="let option of sortOptions" type="button" [class.active]="selectedSortId === option.id" (click)="setSort(option.id)">
+                  {{ option.label }}
+                </button>
+              </div>
+            </div>
+
+            <div class="menu" (click)="$event.stopPropagation()">
+              <button class="btn ghost" type="button" [attr.aria-expanded]="openMenu === 'saved'" (click)="toggleMenu('saved', $event)">
+                Saved search
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </button>
+              <div class="menu-panel" *ngIf="openMenu === 'saved'" (click)="$event.stopPropagation()">
+                <button class="menu-item" *ngFor="let preset of savedSearches" type="button" [class.active]="selectedSavedId === preset.id" (click)="applySavedSearch(preset)">
+                  {{ preset.label }}
+                </button>
+              </div>
+            </div>
+
+            <div class="menu" (click)="$event.stopPropagation()">
+              <button class="icon-button" type="button" aria-label="Filter" [attr.aria-expanded]="openMenu === 'filter'" (click)="toggleMenu('filter', $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="6" x2="20" y2="6"></line>
+                  <circle cx="9" cy="6" r="2"></circle>
+                  <line x1="4" y1="12" x2="20" y2="12"></line>
+                  <circle cx="15" cy="12" r="2"></circle>
+                  <line x1="4" y1="18" x2="20" y2="18"></line>
+                  <circle cx="7" cy="18" r="2"></circle>
+                </svg>
+              </button>
+              <div class="menu-panel filter-panel" *ngIf="openMenu === 'filter'" (click)="$event.stopPropagation()">
+                <div class="menu-title">Filter by user type</div>
+                <label class="filter-item" *ngFor="let role of roleOptions">
+                  <input type="checkbox" [(ngModel)]="roleFilters[role.id]" (change)="onFilterChange()" />
+                  <span>{{ role.name }}</span>
+                </label>
+                <div class="menu-actions">
+                  <button class="btn ghost" type="button" (click)="resetFilters()">Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card user-table-card">
+          <div class="card-header">
+            <h2>List Users</h2>
+          </div>
+
+          <div class="table-wrapper">
+            <div class="table">
+              <div class="table-head">
+                <div>Name</div>
+                <div>Create Date</div>
+                <div>Role</div>
+                <div>Action</div>
+              </div>
+
+              <div class="table-row" *ngFor="let user of paginatedUsers; trackBy: trackByUserId">
+                <div class="user">
+                  <div class="user-info">
+                    <div class="user-name">{{ fullName(user) }}</div>
+                    <div class="user-email">{{ user.email }}</div>
+                  </div>
+                  <app-role-badge [roleName]="user.roleName"></app-role-badge>
+                </div>
+                <div class="cell-muted">
+                  {{ user.createdAt ? (user.createdAt | date: 'dd MMM, y') : '-' }}
+                </div>
+                <div class="cell-muted">{{ user.roleName }}</div>
+                <div class="actions">
+                  <button class="icon-button ghost small" type="button" aria-label="Edit user" [disabled]="rolesLoading || permissionsLoading" (click)="openEditUser(user)">
+                    <span class="action-icon material-symbols-outlined" aria-hidden="true">border_color</span>
+                  </button>
+                  <button class="icon-button ghost small" type="button" aria-label="Delete user" (click)="confirmDeleteUser(user)">
+                    <span class="action-icon material-symbols-outlined" aria-hidden="true">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="empty-state" *ngIf="usersLoading">Loading users...</div>
+              <div class="empty-state error" *ngIf="!usersLoading && usersError">
+                {{ usersError }}
+              </div>
+              <div class="empty-state" *ngIf="!usersLoading && !usersError && paginatedUsers.length === 0">
+                No users found
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="table-footer">
+          <div class="pagination">
+            <span>Items per page</span>
+            <div class="menu" (click)="$event.stopPropagation()">
+              <button class="btn select" type="button" [attr.aria-expanded]="openMenu === 'items'" (click)="toggleMenu('items', $event)">
+                {{ itemsPerPage }}
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </button>
+              <div class="menu-panel items-panel" *ngIf="openMenu === 'items'" (click)="$event.stopPropagation()">
+                <button class="menu-item" *ngFor="let size of itemsPerPageOptions" type="button" [class.active]="itemsPerPage === size" (click)="setItemsPerPage(size)">
+                  {{ size }}
+                </button>
+              </div>
+            </div>
+            <span class="range">{{ rangeStart }}-{{ rangeEnd }} of {{ totalUsers }}</span>
+          </div>
+          <div class="pagination-actions">
+            <button class="icon-button ghost small" type="button" aria-label="Previous page" [disabled]="currentPage === 1" (click)="previousPage()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 6l-6 6 6 6"></path>
+              </svg>
+            </button>
+            <button class="icon-button ghost small" type="button" aria-label="Next page" [disabled]="currentPage === pageCount" (click)="nextPage()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6l6 6-6 6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Documents'">
+        <h1 class="page-title">Documents</h1>
+
+        <div class="doc-toolbar">
+          <label class="search">
+            <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-3.5-3.5"></path>
+              </svg>
+            </span>
+            <input type="search" placeholder="Search documents" autocomplete="off" [(ngModel)]="docSearchTerm" (ngModelChange)="onDocSearchChange()" />
+          </label>
+
+          <div class="doc-toolbar-actions">
+            <div class="menu" (click)="$event.stopPropagation()">
+              <button class="btn ghost" type="button" [attr.aria-expanded]="openMenu === 'docSort'" (click)="toggleMenu('docSort', $event)">
+                Sort by
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </button>
+              <div class="menu-panel" *ngIf="openMenu === 'docSort'" (click)="$event.stopPropagation()">
+                <button class="menu-item" *ngFor="let option of docSortOptions" type="button" [class.active]="docSortId === option.id" (click)="setDocSort(option.id)">
+                  {{ option.label }}
+                </button>
+              </div>
+            </div>
+
+            <div class="menu" (click)="$event.stopPropagation()">
+              <button class="icon-button" type="button" aria-label="Filter documents" [attr.aria-expanded]="openMenu === 'docFilter'" (click)="toggleMenu('docFilter', $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="6" x2="20" y2="6"></line>
+                  <circle cx="9" cy="6" r="2"></circle>
+                  <line x1="4" y1="12" x2="20" y2="12"></line>
+                  <circle cx="15" cy="12" r="2"></circle>
+                  <line x1="4" y1="18" x2="20" y2="18"></line>
+                  <circle cx="7" cy="18" r="2"></circle>
+                </svg>
+              </button>
+              <div class="menu-panel" *ngIf="openMenu === 'docFilter'" (click)="$event.stopPropagation()">
+                <div class="menu-title">Document type</div>
+                <button class="menu-item" *ngFor="let option of docCategoryOptions" type="button" [class.active]="docCategoryFilter === option" (click)="setDocCategory(option)">
+                  {{ option }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-actions">
+          <div class="doc-tools">
+            <button class="tool-button" type="button" [class.active]="docActiveTool === 'list'" (click)="setDocTool('list')" aria-label="List view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="9" y1="6" x2="20" y2="6"></line>
+                <line x1="9" y1="12" x2="20" y2="12"></line>
+                <line x1="9" y1="18" x2="20" y2="18"></line>
+                <circle cx="5" cy="6" r="1.5"></circle>
+                <circle cx="5" cy="12" r="1.5"></circle>
+                <circle cx="5" cy="18" r="1.5"></circle>
+              </svg>
+            </button>
+            <button class="tool-button" type="button" [class.active]="docActiveTool === 'grid'" (click)="setDocTool('grid')" aria-label="Grid view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+              </svg>
+            </button>
+            <button class="tool-button" type="button" [class.active]="docActiveTool === 'download'" (click)="setDocTool('download')" aria-label="Download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v12"></path>
+                <path d="M7 10l5 5 5-5"></path>
+                <rect x="4" y="17" width="16" height="4" rx="2"></rect>
+              </svg>
+            </button>
+            <button class="tool-button" type="button" [class.active]="docActiveTool === 'print'" (click)="setDocTool('print')" aria-label="Print">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="3" width="12" height="6" rx="2"></rect>
+                <rect x="6" y="14" width="12" height="7" rx="2"></rect>
+                <path d="M6 14H5a2 2 0 0 1-2-2v-2a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v2a2 2 0 0 1-2 2h-1"></path>
+              </svg>
+            </button>
+            <button class="tool-button" type="button" [class.active]="docActiveTool === 'trash'" (click)="setDocTool('trash')" aria-label="Trash">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h16"></path>
+                <path d="M7 7v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M9 7l1-2h4l1 2"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="doc-filters">
+            <label class="select-pill">
+              <select [(ngModel)]="docTimeFilter">
+                <option *ngFor="let option of docTimeOptions" [value]="option.id">{{ option.label }}</option>
+              </select>
+            </label>
+            <label class="select-pill">
+              <select [(ngModel)]="docCategoryFilter">
+                <option *ngFor="let option of docCategoryOptions" [value]="option">{{ option }}</option>
+              </select>
+            </label>
+            <button class="doc-add" type="button" (click)="openAddDocument()">+</button>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div>
+              <div class="doc-card-title">List of documents</div>
+              <div class="doc-card-sub">Lorem ipsum lorem uojuhn</div>
+            </div>
+          </div>
+
+          <div class="doc-list" *ngIf="docViewMode === 'list'">
+            <div class="doc-row" *ngFor="let doc of docSortedDocuments">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 3h7l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
+                  <path d="M14 3v5h5"></path>
+                </svg>
+              </div>
+              <div class="doc-meta">
+                <div class="doc-title">{{ doc.title }}</div>
+                <div class="doc-date">{{ doc.date | date: 'MMMM d, y' }}</div>
+              </div>
+              <div class="doc-summary">{{ doc.summary }}</div>
+              <div class="doc-row-actions">
+                <button class="icon-button ghost small" type="button" aria-label="Edit document" (click)="openEditDocument(doc)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 20h4l10-10-4-4L4 16v4z"></path>
+                    <path d="M13 6l4 4"></path>
+                  </svg>
+                </button>
+                <button class="icon-button ghost small" type="button" aria-label="Delete document" (click)="confirmDeleteDocument(doc)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7h16"></path>
+                    <path d="M7 7v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                    <path d="M9 7l1-2h4l1 2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-grid" *ngIf="docViewMode === 'grid'">
+            <div class="doc-grid-card" *ngFor="let doc of docSortedDocuments">
+              <div class="doc-grid-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 3h7l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
+                  <path d="M14 3v5h5"></path>
+                </svg>
+              </div>
+              <div class="doc-title">{{ doc.title }}</div>
+              <div class="doc-date">{{ doc.date | date: 'MMM d, y' }}</div>
+              <div class="doc-summary">{{ doc.summary }}</div>
+              <div class="doc-grid-actions">
+                <button class="btn ghost" type="button" (click)="openEditDocument(doc)">Edit</button>
+                <button class="btn ghost" type="button" (click)="confirmDeleteDocument(doc)">Delete</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-empty" *ngIf="docSortedDocuments.length === 0">No documents found.</div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Photos'">
+        <h1 class="page-title">Photos</h1>
+        <div class="photo-toolbar">
+          <label class="search">
+            <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-3.5-3.5"></path>
+              </svg>
+            </span>
+            <input type="search" placeholder="Search photos" autocomplete="off" />
+          </label>
+          <button class="btn primary" type="button">Upload photo +</button>
+        </div>
+        <div class="photo-grid">
+          <div class="photo-card" *ngFor="let photo of photoItems">
+            <div class="photo-thumb"></div>
+            <div class="photo-info">
+              <div class="photo-title">{{ photo.title }}</div>
+              <div class="photo-meta">{{ photo.tag }} · {{ photo.date }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Hierarchy'">
+        <h1 class="page-title">Hierarchy</h1>
+        <div class="hierarchy-grid">
+          <div class="hierarchy-card" *ngFor="let unit of hierarchyUnits">
+            <div class="hierarchy-title">{{ unit.name }}</div>
+            <div class="hierarchy-lead">Lead: {{ unit.lead }}</div>
+            <div class="hierarchy-meta">{{ unit.members }} members · {{ unit.location }}</div>
+            <button class="btn ghost" type="button">View details</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Message'">
+        <h1 class="page-title">Messages</h1>
+        <div class="message-layout">
+          <div class="message-list">
+            <button class="message-item" type="button" *ngFor="let conversation of conversations" [class.active]="activeConversationId === conversation.id" (click)="selectConversation(conversation)">
+              <span class="avatar small" aria-hidden="true"></span>
+              <span class="message-info">
+                <span class="message-name">{{ conversation.name }}</span>
+                <span class="message-preview">{{ conversation.lastMessage }}</span>
+              </span>
+              <span class="message-meta">
+                <span class="message-time">{{ conversation.time }}</span>
+                <span class="message-badge" *ngIf="conversation.unread > 0">{{ conversation.unread }}</span>
+              </span>
+            </button>
+          </div>
+          <div class="chat-panel">
+            <div class="chat-header">
+              <div>
+                <div class="chat-name">{{ activeConversation?.name }}</div>
+                <div class="chat-role">{{ activeConversation?.role }}</div>
+              </div>
+              <button class="btn ghost" type="button">View profile</button>
+            </div>
+            <div class="chat-body">
+              <div class="chat-bubble" *ngFor="let message of activeMessages" [class.mine]="message.author === 'me'">
+                <div class="chat-text">{{ message.text }}</div>
+                <div class="chat-time">{{ message.time }}</div>
+              </div>
+            </div>
+            <div class="chat-input">
+              <input type="text" placeholder="Type a message" [(ngModel)]="draftMessage" />
+              <button class="btn primary" type="button" (click)="sendMessage()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Help'">
+        <h1 class="page-title">Help Center</h1>
+        <div class="help-grid">
+          <div class="faq-list">
+            <div class="faq-item" *ngFor="let faq of faqs" [class.active]="openFaqId === faq.id">
+              <button class="faq-question" type="button" (click)="toggleFaq(faq.id)">
+                {{ faq.question }}
+                <span class="faq-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </span>
+              </button>
+              <div class="faq-answer" *ngIf="openFaqId === faq.id">{{ faq.answer }}</div>
+            </div>
+          </div>
+          <div class="support-card">
+            <h3>Contact support</h3>
+            <p>Need more help? Our team is ready to assist you.</p>
+            <button class="btn primary" type="button">Send a request</button>
+            <div class="support-meta">support@yourlogo.com</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-section" *ngIf="activeNav === 'Setting'">
+        <h1 class="page-title">Settings</h1>
+        <div class="settings-grid">
+          <div class="setting-card" *ngFor="let setting of settings">
+            <div>
+              <div class="setting-title">{{ setting.label }}</div>
+              <div class="setting-desc">{{ setting.description }}</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="setting.enabled" />
+              <span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="isUserModalOpen" role="dialog" aria-modal="true" (click)="closeUserModal()">
+  <div class="modal user-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingUserId ? 'Edit User' : 'Add User' }}</h3>
+      <button class="icon-button ghost small" type="button" aria-label="Close" (click)="closeUserModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6l12 12"></path>
+          <path d="M18 6l-12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-body" (ngSubmit)="saveUser()">
+      <div class="form-rows">
+        <div class="form-row full">
+          <label class="field" [class.invalid]="formSubmitted && !form.userId.trim()">
+            <span class="sr-only">User ID *</span>
+            <input type="text" name="userId" [(ngModel)]="form.userId" placeholder="User ID *" required />
+          </label>
+        </div>
+
+        <div class="form-row two">
+          <label class="field" [class.invalid]="formSubmitted && !form.firstName.trim()">
+            <span class="sr-only">First Name *</span>
+            <input type="text" name="firstName" [(ngModel)]="form.firstName" placeholder="First Name *" required />
+          </label>
+          <label class="field" [class.invalid]="formSubmitted && !form.lastName.trim()">
+            <span class="sr-only">Last Name *</span>
+            <input type="text" name="lastName" [(ngModel)]="form.lastName" placeholder="Last Name *" required />
+          </label>
+        </div>
+
+        <div class="form-row three">
+          <label class="field" [class.invalid]="formSubmitted && !form.email.trim()">
+            <span class="sr-only">Email ID *</span>
+            <input type="email" name="email" [(ngModel)]="form.email" placeholder="Email ID *" required />
+          </label>
+          <label class="field">
+            <span class="sr-only">Mobile No</span>
+            <input type="tel" name="mobile" [(ngModel)]="form.mobile" placeholder="Mobile No" />
+          </label>
+          <label class="field" [class.invalid]="formSubmitted && !form.roleId">
+            <span class="sr-only">Select Role Type</span>
+            <select name="roleId" [(ngModel)]="form.roleId" [disabled]="rolesLoading || roleOptions.length === 0" required>
+              <option *ngIf="roleOptions.length > 0" [ngValue]="''" disabled>Select Role Type</option>
+              <option *ngIf="roleOptions.length === 0" value="" disabled>No roles available</option>
+              <option *ngFor="let role of roleOptions" [value]="role.id">{{ role.name }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-row three">
+          <label class="field" [class.invalid]="formSubmitted && !form.username.trim()">
+            <span class="sr-only">Username *</span>
+            <input type="text" name="username" [(ngModel)]="form.username" placeholder="Username *" required />
+          </label>
+          <label class="field" [class.invalid]="formSubmitted && !editingUserId && !form.password.trim()">
+            <span class="sr-only">Password *</span>
+            <input type="password" name="password" [(ngModel)]="form.password" placeholder="Password*" [required]="!editingUserId" />
+          </label>
+          <label class="field" [class.invalid]="isPasswordMismatch">
+            <span class="sr-only">Confirm Password *</span>
+            <input type="password" name="confirmPassword" [(ngModel)]="form.confirmPassword" placeholder="Confirm Password*" [required]="!editingUserId" />
+          </label>
+        </div>
+
+        <p class="field-error" *ngIf="isPasswordMismatch">Passwords do not match.</p>
+      </div>
+
+      <div class="permissions">
+        <div class="permissions-head">
+          <div>Module Permission</div>
+          <div>Read</div>
+          <div>Write</div>
+          <div>Delete</div>
+        </div>
+        <div class="permissions-note" *ngIf="permissionsLoading">Loading permissions...</div>
+        <div class="permissions-note error" *ngIf="!permissionsLoading && permissionsError">{{ permissionsError }}</div>
+        <div class="permissions-row" *ngFor="let row of formPermissions; let i = index">
+          <div class="permission-name">{{ row.module }}</div>
+          <label class="checkbox" [attr.aria-label]="'Read permission for ' + row.module">
+            <input type="checkbox" [name]="'perm-' + i + '-read'" [(ngModel)]="row.read" [disabled]="!row.readId" />
+            <span></span>
+          </label>
+          <label class="checkbox" [attr.aria-label]="'Write permission for ' + row.module">
+            <input type="checkbox" [name]="'perm-' + i + '-write'" [(ngModel)]="row.write" [disabled]="!row.writeId" />
+            <span></span>
+          </label>
+          <label class="checkbox" [attr.aria-label]="'Delete permission for ' + row.module">
+            <input type="checkbox" [name]="'perm-' + i + '-delete'" [(ngModel)]="row.delete" [disabled]="!row.deleteId" />
+            <span></span>
+          </label>
+        </div>
+        <div class="permissions-empty" *ngIf="!permissionsError && formPermissions.length === 0">
+          No permissions available.
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn primary" type="submit" [disabled]="!isFormValid || isSavingUser || rolesLoading || permissionsLoading">
+          {{ editingUserId ? 'Save Changes' : 'Add User' }}
+        </button>
+        <button class="btn ghost" type="button" (click)="closeUserModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isDeleteModalOpen" role="dialog" aria-modal="true" (click)="cancelDelete()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <h3>Delete user</h3>
+    <p>Are you sure you want to delete {{ selectedUserForDelete?.firstName }} {{ selectedUserForDelete?.lastName }}?</p>
+    <div class="modal-actions">
+      <button class="btn ghost" type="button" (click)="cancelDelete()">Cancel</button>
+      <button class="btn danger" type="button" (click)="deleteUser()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isDocModalOpen" role="dialog" aria-modal="true" (click)="closeDocModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingDocId ? 'Edit Document' : 'Add Document' }}</h3>
+      <button class="icon-button ghost small" type="button" aria-label="Close" (click)="closeDocModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6l12 12"></path>
+          <path d="M18 6l-12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-body" (ngSubmit)="saveDocument()">
+      <div class="form-rows">
+        <div class="form-row two">
+          <label class="field" [class.invalid]="docFormSubmitted && !docForm.title.trim()">
+            <span>Document Title *</span>
+            <input type="text" name="docTitle" [(ngModel)]="docForm.title" required />
+          </label>
+          <label class="field" [class.invalid]="docFormSubmitted && !docForm.date.trim()">
+            <span>Date *</span>
+            <input type="date" name="docDate" [(ngModel)]="docForm.date" required />
+          </label>
+        </div>
+        <div class="form-row full">
+          <label class="field">
+            <span>Category</span>
+            <select name="docCategory" [(ngModel)]="docForm.category">
+              <option *ngFor="let option of docFormCategories" [value]="option">{{ option }}</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-row full">
+          <label class="field">
+            <span>Summary</span>
+            <textarea name="docSummary" rows="4" [(ngModel)]="docForm.summary"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn primary" type="submit" [disabled]="!isDocFormValid">
+          {{ editingDocId ? 'Save Document' : 'Add Document' }}
+        </button>
+        <button class="btn ghost" type="button" (click)="closeDocModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isDocDeleteModalOpen" role="dialog" aria-modal="true" (click)="cancelDocDelete()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <h3>Delete document</h3>
+    <p>Are you sure you want to delete {{ selectedDocumentForDelete?.title }}?</p>
+    <div class="modal-actions">
+      <button class="btn ghost" type="button" (click)="cancelDocDelete()">Cancel</button>
+      <button class="btn danger" type="button" (click)="deleteDocument()">Delete</button>
+    </div>
+  </div>
+</div>
