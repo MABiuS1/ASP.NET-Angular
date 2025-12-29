@@ -39,10 +39,10 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("datatable")]
-    public async Task<IActionResult> DataTable(DataTableRequest request)
+    public async Task<ActionResult<DataTableResponse<UserDataTableResponseDto>>> DataTable(DataTableRequest request)
     {
         var result = await _service.GetDataTableAsync(request);
-        return Ok(new ApiResponse<DataTableResponse<UserResponseDto>> { data = result });
+        return Ok(result);
     }
 
     [HttpPost]

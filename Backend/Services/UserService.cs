@@ -43,7 +43,7 @@ public class UserService : IUserService
             .ToList();
     }
 
-    public async Task<DataTableResponse<UserResponseDto>> GetDataTableAsync(DataTableRequest request)
+    public async Task<DataTableResponse<UserDataTableResponseDto>> GetDataTableAsync(DataTableRequest request)
     {
         var users = await _userRepo.GetAllAsync();
 
@@ -88,10 +88,10 @@ public class UserService : IUserService
         var paged = query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(MapUser)
+            .Select(MapUserForDataTable)
             .ToList();
 
-        return new DataTableResponse<UserResponseDto>
+        return new DataTableResponse<UserDataTableResponseDto>
         {
             dataSource = paged,
             page = pageNumber,
@@ -102,7 +102,7 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto?> CreateAsync(UserCreateRequest request)
     {
-        var resolved = await ResolveRoleAndOverridesAsync(request.roleId, request.permissions);
+        var resolved = await ResolveRoleAndOverridesAsync(request.roleId, request.permission);
         if (resolved == null) return null;
         var (role, overrides) = resolved.Value;
 
@@ -137,7 +137,7 @@ public class UserService : IUserService
         var user = await _userRepo.GetByIdAsync(id);
         if (user == null) return null;
 
-        var resolved = await ResolveRoleAndOverridesAsync(request.roleId, request.permissions);
+        var resolved = await ResolveRoleAndOverridesAsync(request.roleId, request.permission);
         if (resolved == null) return null;
         var (role, overrides) = resolved.Value;
 
@@ -198,6 +198,32 @@ public class UserService : IUserService
         };
     }
 
+    private static UserDataTableResponseDto MapUserForDataTable(User user)
+    {
+        var effectivePermissions = BuildEffectivePermissions(user);
+        return new UserDataTableResponseDto
+        {
+            userId = user.Id,
+            firstName = user.FirstName,
+            lastName = user.LastName,
+            email = user.Email,
+            username = user.Username,
+            role = new RoleDto
+            {
+                roleId = user.Role.Id,
+                roleName = user.Role.Name
+            },
+            permissions = effectivePermissions
+                .Select(p => new PermissionDto
+                {
+                    permissionId = p.Id,
+                    permissionName = p.Name
+                })
+                .ToList(),
+            createdDate = user.CreatedDate
+        };
+    }
+
     private static List<Permission> BuildEffectivePermissions(User user)
     {
         var rolePermissions = user.Role.RolePermissions
@@ -235,28 +261,59 @@ public class UserService : IUserService
             return (role, new List<UserPermission>());
         }
 
-        var distinctRequests = requests
-            .GroupBy(p => p.permissionId)
-            .Select(g => g.Last())
-            .ToList();
+        var permissions = await _permissionRepo.GetAllAsync();
+        var permissionLookup = permissions
+            .GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        var permissionById = permissions.ToDictionary(p => p.Id, p => p);
 
-        var permissionIds = distinctRequests
-            .Select(p => p.permissionId)
-            .Distinct()
-            .ToList();
+        var requestByModule = new Dictionary<string, UserPermissionRequest>(StringComparer.OrdinalIgnoreCase);
+        foreach (var request in requests)
+        {
+            var module = ResolveModuleName(request.permissionId, permissionById);
+            if (string.IsNullOrWhiteSpace(module))
+            {
+                return null;
+            }
 
-        if (permissionIds.Count == 0)
+            requestByModule[module] = request;
+        }
+
+        var desiredPermissionIds = new HashSet<Guid>();
+
+        foreach (var entry in requestByModule)
+        {
+            var module = entry.Key;
+            var request = entry.Value;
+
+            if (!HasAnyPermission(permissionLookup, module))
+            {
+                return null;
+            }
+
+            if (request.isReadable &&
+                !TryAddPermission(permissionLookup, desiredPermissionIds, module, "Read"))
+            {
+                return null;
+            }
+
+            if (request.isWritable &&
+                !TryAddPermission(permissionLookup, desiredPermissionIds, module, "Write"))
+            {
+                return null;
+            }
+
+            if (request.isDeletable &&
+                !TryAddPermission(permissionLookup, desiredPermissionIds, module, "Delete"))
+            {
+                return null;
+            }
+        }
+
+        if (desiredPermissionIds.Count == 0)
         {
             return (role, new List<UserPermission>());
         }
-
-        var permissions = await _permissionRepo.GetByIdsAsync(permissionIds);
-        if (permissions.Count != permissionIds.Count) return null;
-
-        var desiredPermissionIds = distinctRequests
-            .Where(IsPermissionAllowed)
-            .Select(p => p.permissionId)
-            .ToHashSet();
 
         var rolePermissionIds = role.RolePermissions
             .Select(rp => rp.PermissionId)
@@ -291,8 +348,70 @@ public class UserService : IUserService
         return (role, overrides);
     }
 
-    private static bool IsPermissionAllowed(UserPermissionRequest request)
+    private static string ResolveModuleName(
+        string? permissionKey,
+        IReadOnlyDictionary<Guid, Permission> permissionById)
     {
-        return request.isReadable || request.isWritable || request.isDeletable;
+        if (string.IsNullOrWhiteSpace(permissionKey))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = permissionKey.Trim();
+        if (Guid.TryParse(trimmed, out var permissionId) &&
+            permissionById.TryGetValue(permissionId, out var permission))
+        {
+            return ExtractModuleName(permission.Name);
+        }
+
+        return ExtractModuleName(trimmed);
+    }
+
+    private static string ExtractModuleName(string value)
+    {
+        var trimmed = value.Trim().Trim('.');
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return string.Empty;
+        }
+
+        var parts = trimmed.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length > 1 && IsActionName(parts[^1]))
+        {
+            return string.Join('.', parts.Take(parts.Length - 1));
+        }
+
+        return trimmed;
+    }
+
+    private static bool IsActionName(string value)
+    {
+        return value.Equals("read", StringComparison.OrdinalIgnoreCase) ||
+               value.Equals("write", StringComparison.OrdinalIgnoreCase) ||
+               value.Equals("delete", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasAnyPermission(
+        IReadOnlyDictionary<string, Permission> permissionLookup,
+        string module)
+    {
+        return permissionLookup.ContainsKey($"{module}.Read") ||
+               permissionLookup.ContainsKey($"{module}.Write") ||
+               permissionLookup.ContainsKey($"{module}.Delete");
+    }
+
+    private static bool TryAddPermission(
+        IReadOnlyDictionary<string, Permission> permissionLookup,
+        ISet<Guid> desiredPermissionIds,
+        string module,
+        string action)
+    {
+        if (!permissionLookup.TryGetValue($"{module}.{action}", out var permission))
+        {
+            return false;
+        }
+
+        desiredPermissionIds.Add(permission.Id);
+        return true;
     }
 }

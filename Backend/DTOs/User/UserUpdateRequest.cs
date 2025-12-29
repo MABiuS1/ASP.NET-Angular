@@ -12,5 +12,5 @@ public class UserUpdateRequest
     public Guid roleId { get; set; }
     public string username { get; set; } = null!;
     public string? password { get; set; }
-    public List<UserPermissionRequest> permissions { get; set; } = new List<UserPermissionRequest>();
+    public List<UserPermissionRequest> permission { get; set; } = new List<UserPermissionRequest>();
 }
