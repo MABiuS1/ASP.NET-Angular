@@ -9,4 +9,6 @@ public class UserPermission
 
     public Guid PermissionId { get; set; }
     public Permission Permission { get; set; } = null!;
+
+    public bool IsAllowed { get; set; } = true;
 }

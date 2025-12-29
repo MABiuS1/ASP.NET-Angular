@@ -16,12 +16,12 @@ public class RoleRepository : IRoleRepository
 
     public async Task<List<Role>> GetAllAsync()
     {
-        return await _db.Roles.ToListAsync();
+        return await BuildRoleQuery().ToListAsync();
     }
 
     public async Task<Role?> GetByIdAsync(Guid id)
     {
-        return await _db.Roles.FirstOrDefaultAsync(x => x.Id == id);
+        return await BuildRoleQuery().FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task AddAsync(Role role)
@@ -40,5 +40,12 @@ public class RoleRepository : IRoleRepository
     {
         _db.Roles.Remove(role);
         await _db.SaveChangesAsync();
+    }
+
+    private IQueryable<Role> BuildRoleQuery()
+    {
+        return _db.Roles
+            .Include(x => x.RolePermissions)
+                .ThenInclude(x => x.Permission);
     }
 }

@@ -102,27 +102,29 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto?> CreateAsync(UserCreateRequest request)
     {
-        var resolved = await ResolveRoleAndPermissionsAsync(request.roleId, request.permissions);
+        var resolved = await ResolveRoleAndOverridesAsync(request.roleId, request.permissions);
         if (resolved == null) return null;
-        var (role, permissions) = resolved.Value;
+        var (role, overrides) = resolved.Value;
 
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = request.id ?? Guid.NewGuid(),
             FirstName = request.firstName,
             LastName = request.lastName,
             Email = request.email,
             Username = request.username,
             Phone = request.phone ?? string.Empty,
             RoleId = role.Id,
-            CreatedDate = DateTime.UtcNow,
-            UserPermissions = permissions
-                .Select(p => new UserPermission
-                {
-                    PermissionId = p.Id
-                })
-                .ToList()
+            CreatedDate = DateTime.UtcNow
         };
+        user.UserPermissions = overrides
+            .Select(p => new UserPermission
+            {
+                UserId = user.Id,
+                PermissionId = p.PermissionId,
+                IsAllowed = p.IsAllowed
+            })
+            .ToList();
 
         await _userRepo.AddAsync(user);
 
@@ -135,9 +137,9 @@ public class UserService : IUserService
         var user = await _userRepo.GetByIdAsync(id);
         if (user == null) return null;
 
-        var resolved = await ResolveRoleAndPermissionsAsync(request.roleId, request.permissions);
+        var resolved = await ResolveRoleAndOverridesAsync(request.roleId, request.permissions);
         if (resolved == null) return null;
-        var (role, permissions) = resolved.Value;
+        var (role, overrides) = resolved.Value;
 
         user.FirstName = request.firstName;
         user.LastName = request.lastName;
@@ -145,11 +147,12 @@ public class UserService : IUserService
         user.Username = request.username;
         user.Phone = request.phone ?? string.Empty;
         user.RoleId = role.Id;
-        user.UserPermissions = permissions
+        user.UserPermissions = overrides
             .Select(p => new UserPermission
             {
                 UserId = user.Id,
-                PermissionId = p.Id
+                PermissionId = p.PermissionId,
+                IsAllowed = p.IsAllowed
             })
             .ToList();
 
@@ -170,6 +173,7 @@ public class UserService : IUserService
 
     private static UserResponseDto MapUser(User user)
     {
+        var effectivePermissions = BuildEffectivePermissions(user);
         return new UserResponseDto
         {
             id = user.Id,
@@ -183,34 +187,112 @@ public class UserService : IUserService
                 roleId = user.Role.Id,
                 roleName = user.Role.Name
             },
-            permissions = user.UserPermissions
+            permissions = effectivePermissions
                 .Select(p => new PermissionDto
                 {
-                    permissionId = p.Permission.Id,
-                    permissionName = p.Permission.Name
+                    permissionId = p.Id,
+                    permissionName = p.Name
                 })
                 .ToList(),
+            createdDate = user.CreatedDate
         };
     }
 
-    private async Task<(Role role, List<Permission> permissions)?> ResolveRoleAndPermissionsAsync(
+    private static List<Permission> BuildEffectivePermissions(User user)
+    {
+        var rolePermissions = user.Role.RolePermissions
+            .Select(rp => rp.Permission)
+            .ToList();
+
+        var allowedOverrides = user.UserPermissions
+            .Where(p => p.IsAllowed)
+            .Select(p => p.Permission)
+            .ToList();
+
+        var deniedIds = user.UserPermissions
+            .Where(p => !p.IsAllowed)
+            .Select(p => p.PermissionId)
+            .ToHashSet();
+
+        return rolePermissions
+            .Concat(allowedOverrides)
+            .Where(p => !deniedIds.Contains(p.Id))
+            .GroupBy(p => p.Id)
+            .Select(g => g.First())
+            .ToList();
+    }
+
+    private async Task<(Role role, List<UserPermission> overrides)?> ResolveRoleAndOverridesAsync(
         Guid roleId,
-        List<UserPermissionRequest> permissionRequests)
+        List<UserPermissionRequest>? permissionRequests)
     {
         var role = await _roleRepo.GetByIdAsync(roleId);
         if (role == null) return null;
 
-        var permissionIds = permissionRequests
+        var requests = permissionRequests ?? new List<UserPermissionRequest>();
+        if (requests.Count == 0)
+        {
+            return (role, new List<UserPermission>());
+        }
+
+        var distinctRequests = requests
+            .GroupBy(p => p.permissionId)
+            .Select(g => g.Last())
+            .ToList();
+
+        var permissionIds = distinctRequests
             .Select(p => p.permissionId)
             .Distinct()
             .ToList();
 
         if (permissionIds.Count == 0)
         {
-            return (role, new List<Permission>());
+            return (role, new List<UserPermission>());
         }
 
         var permissions = await _permissionRepo.GetByIdsAsync(permissionIds);
-        return permissions.Count == permissionIds.Count ? (role, permissions) : null;
+        if (permissions.Count != permissionIds.Count) return null;
+
+        var desiredPermissionIds = distinctRequests
+            .Where(IsPermissionAllowed)
+            .Select(p => p.permissionId)
+            .ToHashSet();
+
+        var rolePermissionIds = role.RolePermissions
+            .Select(rp => rp.PermissionId)
+            .ToHashSet();
+
+        var overrides = new List<UserPermission>();
+
+        foreach (var permissionId in desiredPermissionIds)
+        {
+            if (!rolePermissionIds.Contains(permissionId))
+            {
+                overrides.Add(new UserPermission
+                {
+                    PermissionId = permissionId,
+                    IsAllowed = true
+                });
+            }
+        }
+
+        foreach (var permissionId in rolePermissionIds)
+        {
+            if (!desiredPermissionIds.Contains(permissionId))
+            {
+                overrides.Add(new UserPermission
+                {
+                    PermissionId = permissionId,
+                    IsAllowed = false
+                });
+            }
+        }
+
+        return (role, overrides);
+    }
+
+    private static bool IsPermissionAllowed(UserPermissionRequest request)
+    {
+        return request.isReadable || request.isWritable || request.isDeletable;
     }
 }

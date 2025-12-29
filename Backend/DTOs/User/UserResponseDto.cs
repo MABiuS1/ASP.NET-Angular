@@ -15,4 +15,5 @@ public class UserResponseDto
     public string? phone { get; set; }
     public RoleDto role { get; set; } = new RoleDto();
     public List<PermissionDto> permissions { get; set; } = new List<PermissionDto>();
+    public DateTime createdDate { get; set; }
 }

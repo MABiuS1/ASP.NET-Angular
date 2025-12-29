@@ -51,6 +51,8 @@ public class UserRepository : IUserRepository
     {
         return _db.Users
             .Include(x => x.Role)
+                .ThenInclude(x => x.RolePermissions)
+                    .ThenInclude(x => x.Permission)
             .Include(x => x.UserPermissions)
                 .ThenInclude(x => x.Permission);
     }

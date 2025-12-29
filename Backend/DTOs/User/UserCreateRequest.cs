@@ -5,6 +5,7 @@ namespace Backend.DTOs.User;
 
 public class UserCreateRequest
 {
+    public Guid? id { get; set; }
     public string firstName { get; set; } = null!;
     public string lastName { get; set; } = null!;
     public string email { get; set; } = null!;
