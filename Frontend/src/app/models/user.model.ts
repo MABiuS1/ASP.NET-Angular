@@ -48,5 +48,5 @@ export interface UserPayload {
   roleId: string;
   username: string;
   password: string | null;
-  permissions: UserPermissionRequest[];
+  permission: UserPermissionRequest[];
 }

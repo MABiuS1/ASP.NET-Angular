@@ -894,7 +894,7 @@ export class AdminDashboardPageComponent implements OnInit {
       roleId: this.form.roleId,
       username: this.resolveUsername(),
       password: this.form.password.trim() ? this.form.password.trim() : null,
-      permissions: this.buildPermissionRequests(this.formPermissions)
+      permission: this.buildPermissionRequests(this.formPermissions)
     };
   }
 
@@ -998,36 +998,25 @@ export class AdminDashboardPageComponent implements OnInit {
   }
 
   private buildPermissionRequests(rows: PermissionRow[]): UserPermissionRequest[] {
-    const payload: UserPermissionRequest[] = [];
-
-    rows.forEach((row) => {
-      if (row.read && row.readId) {
-        payload.push({
-          permissionId: row.readId,
-          isReadable: true,
-          isWritable: false,
-          isDeletable: false
-        });
-      }
-      if (row.write && row.writeId) {
-        payload.push({
-          permissionId: row.writeId,
-          isReadable: false,
-          isWritable: true,
-          isDeletable: false
-        });
-      }
-      if (row.delete && row.deleteId) {
-        payload.push({
-          permissionId: row.deleteId,
-          isReadable: false,
-          isWritable: false,
-          isDeletable: true
-        });
-      }
-    });
-
-    return payload;
+    return rows
+      .filter((row) => row.read || row.write || row.delete)
+      .map((row) => {
+        const permissionId =
+          (row.read && row.readId) ||
+          (row.write && row.writeId) ||
+          (row.delete && row.deleteId) ||
+          row.readId ||
+          row.writeId ||
+          row.deleteId ||
+          '';
+        return {
+          permissionId,
+          isReadable: row.read,
+          isWritable: row.write,
+          isDeletable: row.delete
+        };
+      })
+      .filter((request) => request.permissionId.length > 0);
   }
 
   private resolveUsername(): string {
